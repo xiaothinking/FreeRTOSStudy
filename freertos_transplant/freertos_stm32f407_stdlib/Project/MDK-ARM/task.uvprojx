@@ -413,11 +413,6 @@
               <FilePath>..\Souce\delay.c</FilePath>
             </File>
             <File>
-              <FileName>uart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Souce\uart.c</FilePath>
-            </File>
-            <File>
               <FileName>timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Souce\timer.c</FilePath>
@@ -431,6 +426,11 @@
               <FileName>led.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Souce\led.c</FilePath>
+            </File>
+            <File>
+              <FileName>usart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Souce\usart.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -1,4 +1,4 @@
-#include "uart.h"
+#include "usart.h"
  
 /*uart2 接收缓存数组，256字节*/
 uint8_t ar_uart1_buffer[MAX_UART_RX_BUFFER];

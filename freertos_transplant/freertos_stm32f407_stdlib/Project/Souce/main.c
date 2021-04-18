@@ -27,7 +27,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "uart.h"
+#include "usart.h"
 #include "delay.h"
 #include "timer.h"
 #include "led.h"
