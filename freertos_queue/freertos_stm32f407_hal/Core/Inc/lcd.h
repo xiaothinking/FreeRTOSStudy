@@ -124,8 +124,6 @@ void LCD_Set_Window(uint16_t sx,uint16_t sy,uint16_t width,uint16_t height);	//É
 #define SSD_VT 	(SSD_VER_RESOLUTION+SSD_VER_BACK_PORCH+SSD_VER_FRONT_PORCH)
 #define SSD_VPS (SSD_VER_BACK_PORCH)
 
-void disp_str(uint8_t* str);
-
 #endif  
 	 
 	 

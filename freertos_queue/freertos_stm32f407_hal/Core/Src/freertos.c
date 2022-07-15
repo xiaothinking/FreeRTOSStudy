@@ -26,10 +26,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "lcd.h"
 #include "gpio.h"
-#include "usart.h"
-#include "malloc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,11 +41,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-//LCD刷屏时使用的颜色
-int lcd_discolor[14]={	WHITE, BLACK, BLUE,  BRED,      
-						GRED,  GBLUE, RED,   MAGENTA,       	 
-						GREEN, CYAN,  YELLOW,BROWN, 			
-						BRRED, GRAY };
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -63,7 +56,6 @@ osMessageQId myQueue02Handle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-void check_msg_queue(void);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -155,6 +147,7 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+    osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -169,28 +162,21 @@ void StartDefaultTask(void const * argument)
 void StartTask02(void const * argument)
 {
   /* USER CODE BEGIN StartTask02 */
-		uint8_t key,i=0;
-    BaseType_t err;
+	uint8_t key;
+	BaseType_t err;
   /* Infinite loop */
   for(;;)
   {
-			key=key_scan(0);            	//扫描按键
-			if((myQueue01Handle!=NULL)&&(key))   	//消息队列Key_Queue创建成功,并且按键被按下
-			{
-					err=xQueueSend(myQueue01Handle,&key,10);
-					if(err==errQUEUE_FULL)   	//发送按键值
-					{
-							printf("队列Key_Queue已满，数据发送失败!\r\n");
-					}
-			}
-			i++;
-			if(i%10==0) check_msg_queue();//检Message_Queue队列的容量
-			if(i==50)
-			{
-					i=0;
-					HAL_GPIO_TogglePin(LED0_GPIO_Port,LED0_Pin);
-			}
-		 osDelay(10);
+				key=key_scan(0);            	//扫描按键
+        if((myQueue01Handle!=NULL)&&(key))   	//消息队列Key_Queue创建成功,并且按键被按下
+        {
+            err=xQueueSend(myQueue01Handle,&key,10);
+            if(err==errQUEUE_FULL)   	//发送按键值
+            {
+//                printf("队列Key_Queue已满，数据发送失败!\r\n");
+            }
+        }
+    osDelay(1);
   }
   /* USER CODE END StartTask02 */
 }
@@ -205,54 +191,46 @@ void StartTask02(void const * argument)
 void StartTask03(void const * argument)
 {
   /* USER CODE BEGIN StartTask03 */
-	uint8_t num,key;
+	uint8_t key;
   /* Infinite loop */
   for(;;)
   {
-		if(myQueue01Handle!=NULL)
+		 if(myQueue01Handle!=NULL)
         {
             if(xQueueReceive(myQueue01Handle,&key,portMAX_DELAY))//请求消息Key_Queue
             {
                 switch(key)
                 {
-                    case 4:		//KEY_UP控制LED1
+                    case 1:		//KEY_UP控制LED1
                         HAL_GPIO_TogglePin(LED1_GPIO_Port,LED1_Pin);
                         break;
-                    case 3:		//KEY2控制蜂鸣器
+										
+                    case 2:		//KEY2控制蜂鸣器
                         HAL_GPIO_TogglePin(BEEP_GPIO_Port,BEEP_Pin);
                         break;
-                    case 1:		//KEY0刷新LCD背景
-                        num++;
-                        LCD_Fill(126,111,233,313,lcd_discolor[num%14]);
+										
+                    case 3:		//KEY_1控制LED0
+                        HAL_GPIO_TogglePin(LED0_GPIO_Port,LED0_Pin);
                         break;
+										
+									   case 4:		//KEY0控制LED0,LED1
+                        HAL_GPIO_TogglePin(LED0_GPIO_Port,LED0_Pin);
+										    HAL_GPIO_TogglePin(LED1_GPIO_Port,LED1_Pin);
+                        break;
+										 
+										 default :
+											  break;
                 }
             }
         } 
-    osDelay(10);
+    osDelay(1);
   }
   /* USER CODE END StartTask03 */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-//查询Message_Queue队列中的总队列数量和剩余队列数量
-void check_msg_queue(void)
-{
-    uint8_t *p;
-	uint8_t msgq_remain_size;	//消息队列剩余大小
-    uint8_t msgq_total_size;     //消息队列总大小
-    
-    taskENTER_CRITICAL();   //进入临界区
-    msgq_remain_size=uxQueueSpacesAvailable(myQueue01Handle);//得到队列剩余大小
-    msgq_total_size=uxQueueMessagesWaiting(myQueue01Handle)+uxQueueSpacesAvailable(myQueue01Handle);//得到队列总大小，总大小=使用+剩余的。
-	p=mymalloc(SRAMIN,20);	//申请内存
-	sprintf((char*)p,"Total Size:%d",msgq_total_size);	//显示DATA_Msg消息队列总的大小
-	LCD_ShowString(10,150,100,16,16,p);
-	sprintf((char*)p,"Remain Size:%d",msgq_remain_size);	//显示DATA_Msg剩余大小
-	LCD_ShowString(10,190,100,16,16,p);
-	myfree(SRAMIN,p);		//释放内存
-    taskEXIT_CRITICAL();    //退出临界区
-}
+
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

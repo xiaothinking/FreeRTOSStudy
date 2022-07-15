@@ -2883,12 +2883,6 @@ void LCD_ShowString(uint16_t x,uint16_t y,uint16_t width,uint16_t height,uint8_t
     }  
 }
 
-void disp_str(uint8_t* str)
-{
-	LCD_Fill(5,230,110,245,WHITE);					//先清除显示区域
-	LCD_ShowString(5,230,100,16,16,str);
-}
-
 
 
 

@@ -20,14 +20,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
-#include "tim.h"
-#include "usart.h"
 #include "gpio.h"
-#include "fsmc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "lcd.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -59,26 +56,7 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-//加载主界面
-void freertos_load_main_ui(void)
-{
-	POINT_COLOR = RED;
-	LCD_ShowString(10,10,200,16,16,"ATK STM32F103/407");	
-	LCD_ShowString(10,30,200,16,16,"FreeRTOS Examp 13-1");
-	LCD_ShowString(10,50,200,16,16,"Message Queue");
-	LCD_ShowString(10,70,220,16,16,"KEY_UP:LED1 KEY0:Refresh LCD");
-	LCD_ShowString(10,90,200,16,16,"KEY1:SendMsg KEY2:BEEP");
-	
-	POINT_COLOR = BLACK;
-	LCD_DrawLine(0,107,239,107);		//画线
-	LCD_DrawLine(119,107,119,319);		//画线
-	LCD_DrawRectangle(125,110,234,314);	//画矩形
-	POINT_COLOR = RED;
-	LCD_ShowString(0,130,120,16,16,"DATA_Msg Size:");
-	LCD_ShowString(0,170,120,16,16,"DATA_Msg rema:");
-	LCD_ShowString(0,210,100,16,16,"DATA_Msg:");
-	POINT_COLOR = BLUE;
-}
+
 /* USER CODE END 0 */
 
 /**
@@ -109,16 +87,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_FSMC_Init();
-  MX_USART1_UART_Init();
-  MX_TIM3_Init();
-  MX_TIM9_Init();
   /* USER CODE BEGIN 2 */
-  LCD_Init();           //初始化LCD FSMC接口	
-	POINT_COLOR=RED;      //画笔颜色：红色
-  HAL_TIM_Base_Start_IT(&htim9);
-  HAL_UART_Receive_IT(&huart1, ar_uart1_buf, 1);
-//	freertos_load_main_ui();
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
@@ -134,6 +103,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
   }
   /* USER CODE END 3 */
 }
