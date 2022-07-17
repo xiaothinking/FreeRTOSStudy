@@ -56,6 +56,7 @@ osMessageQId myQueue02Handle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
+
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -162,18 +163,18 @@ void StartDefaultTask(void const * argument)
 void StartTask02(void const * argument)
 {
   /* USER CODE BEGIN StartTask02 */
-	uint8_t key;
+		uint8_t key;
 	BaseType_t err;
   /* Infinite loop */
   for(;;)
   {
-				key=key_scan(0);            	//扫描按键
-        if((myQueue01Handle!=NULL)&&(key))   	//消息队列Key_Queue创建成功,并且按键被按下
+		key=key_scan(0);            	//????
+        if((myQueue01Handle!=NULL)&&(key))   	//????Key_Queue????,???????
         {
             err=xQueueSend(myQueue01Handle,&key,10);
-            if(err==errQUEUE_FULL)   	//发送按键值
+            if(err==errQUEUE_FULL)   	//?????
             {
-//                printf("队列Key_Queue已满，数据发送失败!\r\n");
+
             }
         }
     osDelay(1);
@@ -195,25 +196,25 @@ void StartTask03(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-		 if(myQueue01Handle!=NULL)
+		if(myQueue01Handle!=NULL)
         {
-            if(xQueueReceive(myQueue01Handle,&key,portMAX_DELAY))//请求消息Key_Queue
+            if(xQueueReceive(myQueue01Handle,&key,portMAX_DELAY))//????Key_Queue
             {
                 switch(key)
                 {
-                    case 1:		//KEY_UP控制LED1
+                    case 1:		//KEY_UP??LED1
                         HAL_GPIO_TogglePin(LED1_GPIO_Port,LED1_Pin);
                         break;
 										
-                    case 2:		//KEY2控制蜂鸣器
+                    case 2:		//KEY2?????
                         HAL_GPIO_TogglePin(BEEP_GPIO_Port,BEEP_Pin);
                         break;
 										
-                    case 3:		//KEY_1控制LED0
+                    case 3:		//KEY_1??LED0
                         HAL_GPIO_TogglePin(LED0_GPIO_Port,LED0_Pin);
                         break;
 										
-									   case 4:		//KEY0控制LED0,LED1
+									   case 4:		//KEY0??LED0,LED1
                         HAL_GPIO_TogglePin(LED0_GPIO_Port,LED0_Pin);
 										    HAL_GPIO_TogglePin(LED1_GPIO_Port,LED1_Pin);
                         break;
