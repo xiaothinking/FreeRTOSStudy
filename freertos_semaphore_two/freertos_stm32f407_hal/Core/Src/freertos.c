@@ -26,58 +26,22 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "lcd.h"
-#include "gpio.h"
 #include "usart.h"
-#include "malloc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-//用于命令解析用的命令值
-#define LED1ON	1
-#define LED1OFF	2
-#define BEEPON	3
-#define BEEPOFF	4
-#define COMMANDERR	0XFF
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-//将字符串中的小写字母转换为大写
-//str:要转换的字符串
-//len：字符串长度
-void LowerToCap(uint8_t *str,uint8_t len)
-{
-	uint8_t i;
-	for(i=0;i<len;i++)
-	{
-		if((96<str[i])&&(str[i]<123))	//小写字母
-		str[i]=str[i]-32;				//转换为大写
-	}
-}
 
-//命令处理函数，将字符串命令转换成命令值
-//str：命令
-//返回值: 0XFF，命令错误；其他值，命令值
-uint8_t CommandProcess(uint8_t *str)
-{
-	uint8_t CommandValue=COMMANDERR;
-	if(strcmp((char*)str,"LED1ON")==0) CommandValue=LED1ON;
-	else if(strcmp((char*)str,"LED1OFF")==0) CommandValue=LED1OFF;
-	else if(strcmp((char*)str,"BEEPON")==0) CommandValue=BEEPON;
-	else if(strcmp((char*)str,"BEEPOFF")==0) CommandValue=BEEPOFF;
-	return CommandValue;
-}
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-//LCD刷屏时使用的颜色
-int lcd_discolor[14]={	WHITE, BLACK, BLUE,  BRED,      
-						GRED,  GBLUE, RED,   MAGENTA,       	 
-						GREEN, CYAN,  YELLOW,BROWN, 			
-						BRRED, GRAY };
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -86,17 +50,15 @@ int lcd_discolor[14]={	WHITE, BLACK, BLUE,  BRED,
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId myTask02Handle;
-osThreadId myTask03Handle;
 osSemaphoreId myBinarySem01Handle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-void check_msg_queue(void);
+
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
 void StartTask02(void const * argument);
-void StartTask03(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -156,10 +118,6 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(myTask02, StartTask02, osPriorityIdle, 0, 128);
   myTask02Handle = osThreadCreate(osThread(myTask02), NULL);
 
-  /* definition and creation of myTask03 */
-  osThreadDef(myTask03, StartTask03, osPriorityIdle, 0, 128);
-  myTask03Handle = osThreadCreate(osThread(myTask03), NULL);
-
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -179,6 +137,7 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+    osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -193,88 +152,31 @@ void StartDefaultTask(void const * argument)
 void StartTask02(void const * argument)
 {
   /* USER CODE BEGIN StartTask02 */
-
-  /* Infinite loop */
-  for(;;)
-  {
-     HAL_GPIO_TogglePin(LED0_GPIO_Port,LED0_Pin);
-		 osDelay(500);
-  }
-  /* USER CODE END StartTask02 */
-}
-
-/* USER CODE BEGIN Header_StartTask03 */
-/**
-* @brief Function implementing the myTask03 thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartTask03 */
-void StartTask03(void const * argument)
-{
-  /* USER CODE BEGIN StartTask03 */
-	uint8_t len=0;
-	uint8_t CommandValue=COMMANDERR;
 	BaseType_t err=pdFALSE;
-	
-	uint8_t *CommandStr;
-	POINT_COLOR=BLUE;
   /* Infinite loop */
   for(;;)
   {
+//		usart1_handle();
+//    osDelay(10);
 		if(myBinarySem01Handle!=NULL)
 		{
 			err=xSemaphoreTake(myBinarySem01Handle,portMAX_DELAY);	//获取信号量
 			if(err==pdTRUE)										//获取信号量成功
 			{
-				len=USART_RX_STA&0x3fff;						//得到此次接收到的数据长度
-				CommandStr=mymalloc(SRAMIN,len+1);				//申请内存
-				sprintf((char*)CommandStr,"%s",USART_RX_BUF);
-				CommandStr[len]='\0';							//加上字符串结尾符号
-				LowerToCap(CommandStr,len);						//将字符串转换为大写		
-				CommandValue=CommandProcess(CommandStr);		//命令解析
-				if(CommandValue!=COMMANDERR)
-				{
-					LCD_Fill(10,90,210,110,WHITE);				//清除显示区域
-					LCD_ShowString(10,90,200,16,16,CommandStr);	//在LCD上显示命令
-					printf("命令为:%s\r\n",CommandStr);
-					switch(CommandValue)						//处理命令
-					{
-						case LED1ON: 
-							HAL_GPIO_WritePin(LED1_GPIO_Port,LED1_Pin,GPIO_PIN_RESET);
-							break;
-						case LED1OFF:
-							HAL_GPIO_WritePin(LED1_GPIO_Port,LED1_Pin,GPIO_PIN_SET);
-							break;
-						case BEEPON:
-							HAL_GPIO_WritePin(BEEP_GPIO_Port,BEEP_Pin,GPIO_PIN_SET);
-							break;
-						case BEEPOFF:
-							HAL_GPIO_WritePin(BEEP_GPIO_Port,BEEP_Pin,GPIO_PIN_RESET);
-							break;
-					}
-				}
-				else
-				{
-					printf("无效的命令，请重新输入!!\r\n");
-				}
-				USART_RX_STA=0;
-				memset(USART_RX_BUF,0,USART_REC_LEN);			//串口接收缓冲区清零
-				myfree(SRAMIN,CommandStr);						//释放内存
+				g_usart1_rx_finish=0;
+	    	HAL_UART_Transmit_DMA(&huart1,ar_usart1_tx_buffer,g_usart1_rx_len);
 			}
 		}
-   else if(err==pdFALSE)
-    {
-			osDelay(10);			
+		else if(err==pdFALSE)
+		{
+			osDelay(10);      //延时10ms，也就是10个时钟节拍	
 		}
-    
   }
-  /* USER CODE END StartTask03 */
+  /* USER CODE END StartTask02 */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-
 
 /* USER CODE END Application */
 

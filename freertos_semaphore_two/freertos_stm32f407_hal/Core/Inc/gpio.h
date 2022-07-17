@@ -32,16 +32,13 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
-#define KEY0 		HAL_GPIO_ReadPin(GPIOE,GPIO_PIN_4) //PE4
-#define KEY1 		HAL_GPIO_ReadPin(GPIOE,GPIO_PIN_3)	//PE3 
-#define KEY2 		HAL_GPIO_ReadPin(GPIOE,GPIO_PIN_2) //PE2
-#define WK_UP 	HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0)	//PA0
+
 /* USER CODE END Private defines */
 
 void MX_GPIO_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-uint8_t key_scan(uint8_t mode);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

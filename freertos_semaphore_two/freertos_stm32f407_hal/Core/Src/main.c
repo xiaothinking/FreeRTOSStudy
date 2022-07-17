@@ -9,10 +9,10 @@
   * <h2><center>&copy; Copyright (c) 2022 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software component is licensed by ST under Ultimate Liberty license
+  * SLA0044, the "License"; You may not use this file except in compliance with
+  * the License. You may obtain a copy of the License at:
+  *                             www.st.com/SLA0044
   *
   ******************************************************************************
   */
@@ -20,15 +20,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
-#include "tim.h"
+#include "dma.h"
 #include "usart.h"
 #include "gpio.h"
-#include "fsmc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "lcd.h"
-#include "malloc.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -60,26 +58,7 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-//加载主界面
-void freertos_load_main_ui(void)
-{
-	POINT_COLOR = RED;
-	LCD_ShowString(10,10,200,16,16,"ATK STM32F103/407");	
-	LCD_ShowString(10,30,200,16,16,"FreeRTOS Examp 13-1");
-	LCD_ShowString(10,50,200,16,16,"Message Queue");
-	LCD_ShowString(10,70,220,16,16,"KEY_UP:LED1 KEY0:Refresh LCD");
-	LCD_ShowString(10,90,200,16,16,"KEY1:SendMsg KEY2:BEEP");
-	
-	POINT_COLOR = BLACK;
-	LCD_DrawLine(0,107,239,107);		//画线
-	LCD_DrawLine(119,107,119,319);		//画线
-	LCD_DrawRectangle(125,110,234,314);	//画矩形
-	POINT_COLOR = RED;
-	LCD_ShowString(0,130,120,16,16,"DATA_Msg Size:");
-	LCD_ShowString(0,170,120,16,16,"DATA_Msg rema:");
-	LCD_ShowString(0,210,100,16,16,"DATA_Msg:");
-	POINT_COLOR = BLUE;
-}
+
 /* USER CODE END 0 */
 
 /**
@@ -110,19 +89,11 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_FSMC_Init();
+  MX_DMA_Init();
   MX_USART1_UART_Init();
-  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-  LCD_Init();           //初始化LCD FSMC接口	
-	my_mem_init(SRAMIN);            	//初始化内部内存池
-	POINT_COLOR=RED;      //画笔颜色：红色
-  HAL_UART_Receive_IT(&huart1, ar_uart1_buf, 1);
-//	freertos_load_main_ui();
-  LCD_ShowString(10,10,200,16,16,"ATK STM32F103/407");	
-	LCD_ShowString(10,30,200,16,16,"FreeRTOS Examp 14-1");
-	LCD_ShowString(10,50,200,16,16,"Binary Semap");
-	LCD_ShowString(10,70,200,16,16,"Command data:");
+  HAL_UART_Receive_DMA(&huart1, ar_usart1_rx_buffer, MAX_RECEIVE_DATA);
+  __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
