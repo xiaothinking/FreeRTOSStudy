@@ -35,11 +35,7 @@ extern "C" {
 extern UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN Private defines */
-#define USART_REC_LEN  			50  	//定义最大接收字节数 50
-	  	
-extern uint8_t  USART_RX_BUF[USART_REC_LEN]; //接收缓冲,最大USART_REC_LEN个字节.末字节为换行符 
-extern uint16_t USART_RX_STA;         		//接收状态标记	
-extern uint8_t ar_uart1_buf[USART_REC_LEN]; 
+
 /* USER CODE END Private defines */
 
 void MX_USART1_UART_Init(void);

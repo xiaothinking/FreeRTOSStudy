@@ -21,19 +21,6 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "main.h"
-#include "cmsis_os.h"
-
-
-uint8_t USART_RX_BUF[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
-//接收状态
-//bit15，	接收完成标志
-//bit14，	接收到0x0d
-//bit13~0，	接收到的有效字节数目
-uint16_t USART_RX_STA=0;       //接收状态标记	
-uint8_t ar_uart1_buf[USART_REC_LEN]; 
 
 /* USER CODE END 0 */
 
@@ -93,9 +80,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    /* USART1 interrupt Init */
-    HAL_NVIC_SetPriority(USART1_IRQn, 5, 0);
-    HAL_NVIC_EnableIRQ(USART1_IRQn);
   /* USER CODE BEGIN USART1_MspInit 1 */
 
   /* USER CODE END USART1_MspInit 1 */
@@ -119,8 +103,6 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     */
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9|GPIO_PIN_10);
 
-    /* USART1 interrupt Deinit */
-    HAL_NVIC_DisableIRQ(USART1_IRQn);
   /* USER CODE BEGIN USART1_MspDeInit 1 */
 
   /* USER CODE END USART1_MspDeInit 1 */
@@ -132,40 +114,6 @@ int fputc(int ch, FILE* stream)
 {
     HAL_UART_Transmit(&huart1 , (uint8_t *)&ch, 1, 0xFFFF);
     return ch;
-}
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) // 中断函数
-{
-   uint8_t Res;
-	 BaseType_t xHigherPriorityTaskWoken;
-    if (huart->Instance == USART1)
-    {
-       	Res =ar_uart1_buf[0];//(USART1->DR);	//读取接收到的数据
-		
-				if((USART_RX_STA&0x8000)==0)//接收未完成
-				{
-					if(USART_RX_STA&0x4000)//接收到了0x0d
-					{
-						if(Res!=0x0a)USART_RX_STA=0;//接收错误,重新开始
-						else USART_RX_STA|=0x8000;	//接收完成了 
-					}
-					else //还没收到0X0D
-					{	
-						if(Res==0x0d)USART_RX_STA|=0x4000;
-						else
-						{
-							USART_RX_BUF[USART_RX_STA&0X3FFF]=Res ;
-							USART_RX_STA++;
-							if(USART_RX_STA>(USART_REC_LEN-1))USART_RX_STA=0;//接收数据错误,重新开始接收	  
-						}		 
-					}
-				}   
-					//就向队列发送接收到的数据
-
-        /*enable USART1 receive interrupt*/
-        HAL_UART_Receive_IT(&huart1, ar_uart1_buf, 1);
-    }
-
 }
 /* USER CODE END 1 */
 

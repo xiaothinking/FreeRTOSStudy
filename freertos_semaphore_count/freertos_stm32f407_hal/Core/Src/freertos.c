@@ -26,58 +26,23 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "lcd.h"
 #include "gpio.h"
 #include "usart.h"
-#include "malloc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-//用于命令解析用的命令值
-#define LED1ON	1
-#define LED1OFF	2
-#define BEEPON	3
-#define BEEPOFF	4
-#define COMMANDERR	0XFF
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-//将字符串中的小写字母转换为大写
-//str:要转换的字符串
-//len：字符串长度
-void LowerToCap(uint8_t *str,uint8_t len)
-{
-	uint8_t i;
-	for(i=0;i<len;i++)
-	{
-		if((96<str[i])&&(str[i]<123))	//小写字母
-		str[i]=str[i]-32;				//转换为大写
-	}
-}
 
-//命令处理函数，将字符串命令转换成命令值
-//str：命令
-//返回值: 0XFF，命令错误；其他值，命令值
-uint8_t CommandProcess(uint8_t *str)
-{
-	uint8_t CommandValue=COMMANDERR;
-	if(strcmp((char*)str,"LED1ON")==0) CommandValue=LED1ON;
-	else if(strcmp((char*)str,"LED1OFF")==0) CommandValue=LED1OFF;
-	else if(strcmp((char*)str,"BEEPON")==0) CommandValue=BEEPON;
-	else if(strcmp((char*)str,"BEEPOFF")==0) CommandValue=BEEPOFF;
-	return CommandValue;
-}
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-//LCD刷屏时使用的颜色
-int lcd_discolor[14]={	WHITE, BLACK, BLUE,  BRED,      
-						GRED,  GBLUE, RED,   MAGENTA,       	 
-						GREEN, CYAN,  YELLOW,BROWN, 			
-						BRRED, GRAY };
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -91,7 +56,7 @@ osSemaphoreId myCountingSem01Handle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-void check_msg_queue(void);
+
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -133,7 +98,7 @@ void MX_FREERTOS_Init(void) {
   /* Create the semaphores(s) */
   /* definition and creation of myCountingSem01 */
   osSemaphoreDef(myCountingSem01);
-  myCountingSem01Handle = osSemaphoreCreate(osSemaphore(myCountingSem01), 255);
+  myCountingSem01Handle = osSemaphoreCreate(osSemaphore(myCountingSem01), 5);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -179,7 +144,7 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-		
+    osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -195,34 +160,34 @@ void StartTask02(void const * argument)
 {
   /* USER CODE BEGIN StartTask02 */
 	uint8_t key,i=0;
-  uint8_t semavalue;
+	uint8_t semavalue;
 	BaseType_t err;
   /* Infinite loop */
   for(;;)
   {
-     		key=key_scan(0);           	//扫描按键
-        if(myCountingSem01Handle!=NULL)  	//计数型信号量创建成功
+		 key=key_scan(0);           	//扫描按键
+		 if(myCountingSem01Handle!=NULL)  	//计数型信号量创建成功
         {
             switch(key)
             {
                 case 4:
-                    err=xSemaphoreGive(myCountingSem01Handle);//释放计数型信号量
-										if(err==pdFALSE)
-										{
-											printf("信号量释放失败!!!\r\n");
-										}
-                    semavalue=uxSemaphoreGetCount(myCountingSem01Handle);	//获取计数型信号量值
-                    LCD_ShowxNum(155,111,semavalue,3,16,0);	    	//显示信号量值
-                 break;
+                     {
+											  err=xSemaphoreGive(myCountingSem01Handle);//释放计数型信号量
+												if(err==pdFALSE)
+												{
+													printf("信号量释放失败!!!\r\n");
+												}
+                        semavalue=uxSemaphoreGetCount(myCountingSem01Handle);	//获取计数型信号量值
+												printf("semavalue=%d\r\n",semavalue); 	//显示信号量值
+                        HAL_GPIO_TogglePin(LED0_GPIO_Port,LED0_Pin);
+										 }
+                    break;
+										 
+								default :
+									break;
             }
         }
-        i++;
-        if(i==50)
-        {
-            i=0;
-            HAL_GPIO_TogglePin(LED0_GPIO_Port,LED0_Pin);
-        }
-		    osDelay(500);
+     osDelay(10);
   }
   /* USER CODE END StartTask02 */
 }
@@ -239,24 +204,20 @@ void StartTask03(void const * argument)
   /* USER CODE BEGIN StartTask03 */
 	uint8_t num;
 	uint8_t semavalue;
-	BaseType_t err=pdFALSE;
   /* Infinite loop */
   for(;;)
   {
-		xSemaphoreTake(myCountingSem01Handle,portMAX_DELAY); 	//等待数值信号量
-		num++;
-		semavalue=uxSemaphoreGetCount(myCountingSem01Handle); 	//获取数值信号量值
-		LCD_ShowxNum(155,111,semavalue,3,16,0);         //显示信号量值
-		LCD_Fill(6,131,233,313,lcd_discolor[num%14]);   //刷屏
-		HAL_GPIO_TogglePin(LED1_GPIO_Port,LED1_Pin);
-		osDelay(1000);			
+		 xSemaphoreTake(myCountingSem01Handle,portMAX_DELAY); 	//等待数值信号量
+     semavalue=uxSemaphoreGetCount(myCountingSem01Handle); 	//获取数值信号量值
+		 printf("semavalue=%d\r\n",semavalue); 	//显示信号量值
+     HAL_GPIO_TogglePin(LED1_GPIO_Port,LED1_Pin);
+     osDelay(1000);
   }
   /* USER CODE END StartTask03 */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-
 
 /* USER CODE END Application */
 
